@@ -31,6 +31,12 @@ Le projet utilise **Airtable comme base de données** pour la gestion des réser
   * Obligatoire
   * Type : short texte (texte sur une seule ligne)
   * Contient **l’heure de la réservation**
+  
+* **date**
+
+  * Obligatoire
+  * Type : date (format Local 27/3/2026)
+  * Contient **le jour de la réservation**
 
 * **phone_number**
 
