@@ -1,0 +1,816 @@
+{
+  "name": "La Cigale - chat",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ \n  ($json.message?.text ?? '') \n  || ($json.content?.parts?.[0]?.text ?? '') \n}}",
+        "options": {
+          "systemMessage": "You are a virtual waiter for the restaurant La Cigale. Your goal is to provide accurate and friendly answers to customers about the restaurant's menu, including dishes, prices, ingredients, drinks, and allergens, using only verified information available in your knowledge base.\nWhen interacting with users:\n\nAlways respond in French, naturally and politely, as if you were speaking directly to a customer at their table.\n- Use a warm, professional, and attentive tone.\n- Provide concise, clear answers in plain text without formatting or technical details.\n- Answers must stay between 3 to 5 sentences.\n- If the customer asks a question you cannot answer with available data, apologize and state that you do not have that information.\n- If the customer asks to make a reservation, politely collect the necessary information (name, number of people, date, desired time, contact details) and confirm that you are recording their reservation request.\n\nYou have access to the following tools:\n\n- suppabase_recherche_cartes: Use this vector store to search for relevant information about dishes, ingredients, prices, and other menu details whenever a customer asks about them.\n- Create a record in Airtable: Use this tool to record reservation requests with all collected information (customer name, number of people, date, time, contact details).\n\nOutput format: TEXT (plain language, no Markdown, no tables)\nConstraints:\n\nDO NOT invent, guess, or hallucinate any information.\nDO NOT mention Supabase, databases, or any AI or system processes.\nIf unsure or data is missing, say: \"Je suis désolé, je n'ai pas cette information pour le moment.\"\nFor reservations, make sure to collect all essential information before recording them in Airtable."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        1024,
+        -160
+      ],
+      "id": "950ef830-c38b-42cf-88cf-d983c3220f6c",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -256,
+        688
+      ],
+      "id": "cff08506-83d1-4bd9-9d87-ea8789e25c70",
+      "name": "When clicking ‘Execute workflow’",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "dataType": "binary",
+        "textSplittingMode": "custom",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        768,
+        912
+      ],
+      "id": "bd7fc58d-f762-47df-9243-af6a5f2b0add",
+      "name": "Default Data Loader",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        848,
+        1120
+      ],
+      "id": "e7ee4d58-0a30-4e45-9db5-ccfe9147f868",
+      "name": "Recursive Character Text Splitter",
+      "disabled": true
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1200,
+        272
+      ],
+      "id": "66c39e5b-2373-47d6-b557-f9561de5b80e",
+      "name": "Embeddings Google Gemini1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "MG422NpYjTLrDZIr",
+          "name": "Audrey Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "searchMethod": "query",
+        "filter": {
+          "folderId": {
+            "__rl": true,
+            "value": "1yDhNS_N14b8JxUPEVMb2FPE9AB96X0K8",
+            "mode": "list",
+            "cachedResultName": "NoCode - n8n",
+            "cachedResultUrl": "https://drive.google.com/drive/folders/1yDhNS_N14b8JxUPEVMb2FPE9AB96X0K8"
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -32,
+        688
+      ],
+      "id": "6a621f4c-0a5f-41b9-8d8c-79e29d7abcc6",
+      "name": "drive_chercher_cartes",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "ZzOwnnzGOp6dtuTK",
+          "name": "Audrey Google Drive account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        192,
+        688
+      ],
+      "id": "13437464-7d0a-4390-978f-da8c4f5a4c09",
+      "name": "boucle",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        416,
+        624
+      ],
+      "id": "0d6def74-1bcf-4976-aef8-639ef4862047",
+      "name": "drive_telecharger_cartes",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "ZzOwnnzGOp6dtuTK",
+          "name": "Audrey Google Drive account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        640,
+        912
+      ],
+      "id": "d0adc40b-67b5-4dbc-adff-9d4df29b78cc",
+      "name": "gemini_embeding_cartes",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "MG422NpYjTLrDZIr",
+          "name": "Audrey Google Gemini(PaLM) Api account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "tableName": {
+          "__rl": true,
+          "value": "documents",
+          "mode": "list",
+          "cachedResultName": "documents"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        672,
+        688
+      ],
+      "id": "a0fdd781-aab9-4c26-8e3c-e0f2e22e9206",
+      "name": "suppabase_enregistrer_cartes",
+      "credentials": {
+        "supabaseApi": {
+          "id": "uNithUu1iCL5P5ss",
+          "name": "Audrey Supabase account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "=$('Data').first().item.keyname"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        992,
+        64
+      ],
+      "id": "f2488446-830a-4c84-9fea-ffbd1948bf7e",
+      "name": "postgres_memoire_chat",
+      "credentials": {
+        "postgres": {
+          "id": "8ousihN3kx7IdL8u",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        864,
+        64
+      ],
+      "id": "aa5bd366-1431-497d-8b94-54e9646dc495",
+      "name": "gemini_model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "MG422NpYjTLrDZIr",
+          "name": "Audrey Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Tu es un serveur du restaurant La Cigale. Tu dois aller chercher toutes tes connaissances dans Supabase Vector pour toutes les informations liées au menu ou à la carte, et toutes les questions qu'on peut te poser dans le chat. Tu ne dois jamais inventer de réponse. Dit que tu n'as pas la réponse si tu ne sais pas.",
+        "tableName": {
+          "__rl": true,
+          "value": "documents",
+          "mode": "list",
+          "cachedResultName": "documents"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        1120,
+        64
+      ],
+      "id": "47223a4b-6144-4a65-94ce-f17ffc9c6e8f",
+      "name": "suppabase_recherche_cartes",
+      "credentials": {
+        "supabaseApi": {
+          "id": "uNithUu1iCL5P5ss",
+          "name": "Audrey Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1584,
+        -64
+      ],
+      "id": "851d99d7-f811-4939-923d-0c80a91d32fe",
+      "name": "Send a text message",
+      "webhookId": "1ff04eb5-bbfe-418e-92e0-c9884200794e",
+      "credentials": {
+        "telegramApi": {
+          "id": "wVoqxnKfC1Ss91jb",
+          "name": "Audrey Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -224,
+        -144
+      ],
+      "id": "fb5e7808-1e3b-47cb-a156-8302bb9f15ba",
+      "name": "Telegram Trigger",
+      "webhookId": "3452afe4-5bf5-4b14-bdcd-6cbcca31054d",
+      "credentials": {
+        "telegramApi": {
+          "id": "wVoqxnKfC1Ss91jb",
+          "name": "Audrey Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $json.message.voice.file_id }}",
+        "additionalFields": {
+          "mimeType": "={{ $json.message.voice.mime_type }}"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        208,
+        48
+      ],
+      "id": "f34e4d4c-0b50-40ef-b973-942193eb04a1",
+      "name": "Get a file",
+      "webhookId": "266bda5e-cfdc-4cb9-a695-e887cd963ba8",
+      "credentials": {
+        "telegramApi": {
+          "id": "wVoqxnKfC1Ss91jb",
+          "name": "Audrey Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "inputType": "binary",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        432,
+        48
+      ],
+      "id": "bba6b42d-36e6-4699-97d1-8e76316ea588",
+      "name": "Transcribe a recording",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "MG422NpYjTLrDZIr",
+          "name": "Audrey Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f339bc41-e4cb-4f7c-acd8-d271b68e88c4",
+              "name": "message.text",
+              "value": "={{ $json.content.parts[0].text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        656,
+        48
+      ],
+      "id": "80c6a9e5-13dc-4807-b9ed-b6b47bb21238",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    },
+                    "id": "efefd9b2-26ea-47b7-81ca-0d063f6c0196"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "f0c2b996-5629-4151-aaf7-36fdecfcd9a1",
+                    "leftValue": "={{ $json.message.voice }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "object",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        -16,
+        -144
+      ],
+      "id": "69f14d85-ba7f-4906-a9c6-4210ea0b1ad3",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appnwmcG0QCohq2ql",
+          "mode": "list",
+          "cachedResultName": "La Cigale",
+          "cachedResultUrl": "https://airtable.com/appnwmcG0QCohq2ql"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblR4PrYGCS96PPh2",
+          "mode": "list",
+          "cachedResultName": "reservation",
+          "cachedResultUrl": "https://airtable.com/appnwmcG0QCohq2ql/tblR4PrYGCS96PPh2"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "number_person": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('number_person', ``, 'number') }}",
+            "name": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('name', ``, 'string') }}",
+            "hour": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('hour', ``, 'string') }}",
+            "phone_number": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('phone_number', ``, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "hour",
+              "displayName": "hour",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "phone_number",
+              "displayName": "phone_number",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "number_person",
+              "displayName": "number_person",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtableTool",
+      "typeVersion": 2.1,
+      "position": [
+        1408,
+        64
+      ],
+      "id": "d3132de2-60e5-47a8-80a1-57286b42bfcd",
+      "name": "Create a record in Airtable",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "tX9JpC8XMxzAOzAA",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "guildId": {
+          "__rl": true,
+          "value": "1460982833089740976",
+          "mode": "list",
+          "cachedResultName": "Horial - Formateur",
+          "cachedResultUrl": "https://discord.com/channels/1460982833089740976"
+        },
+        "channelId": {
+          "__rl": true,
+          "value": "1460982833542594596",
+          "mode": "list",
+          "cachedResultName": "log-nclc",
+          "cachedResultUrl": "https://discord.com/channels/1460982833089740976/1460982833542594596"
+        },
+        "content": "=Audrey : {{ $json.output }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        1584,
+        -240
+      ],
+      "id": "8c6631be-02fb-41de-93b0-4d9067611a93",
+      "name": "Send a message",
+      "webhookId": "bfbbfc76-2fe0-4999-8998-9d336c5ce8bb",
+      "credentials": {
+        "discordBotApi": {
+          "id": "HCL8KmvO9VWfs1uf",
+          "name": "Discord Bot account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "drive_chercher_cartes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "suppabase_enregistrer_cartes",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Google Gemini1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "suppabase_recherche_cartes",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "drive_chercher_cartes": {
+      "main": [
+        [
+          {
+            "node": "boucle",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "boucle": {
+      "main": [
+        [],
+        [
+          {
+            "node": "drive_telecharger_cartes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "drive_telecharger_cartes": {
+      "main": [
+        [
+          {
+            "node": "suppabase_enregistrer_cartes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "gemini_embeding_cartes": {
+      "ai_embedding": [
+        [
+          {
+            "node": "suppabase_enregistrer_cartes",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "suppabase_enregistrer_cartes": {
+      "main": [
+        [
+          {
+            "node": "boucle",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "postgres_memoire_chat": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "gemini_model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "suppabase_recherche_cartes": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a file": {
+      "main": [
+        [
+          {
+            "node": "Transcribe a recording",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transcribe a recording": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get a file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a record in Airtable": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "14591753-cd07-449b-8fe0-345bce3d6ae6",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "48f846fe2547af980d4ea1d934aa76fd7fde424a4ad552801ef82f3a53613da9"
+  },
+  "id": "Eene2MjHbG11cqG7",
+  "tags": []
+}
