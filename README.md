@@ -1,87 +1,152 @@
-# Welcome to React Router!
+# La Cigale Dashboard
+> Projet fictif
 
-A modern, production-ready template for building full-stack React applications using React Router.
+CRM SaaS de gestion des reservations pour le restaurant La Cigale.
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/remix-run/react-router-templates/tree/main/default)
+## Stack technique
 
-## Features
+- React Router 7 (full-stack)
+- React 19
+- TypeScript
+- Tailwind CSS 4
+- Airtable (source de donnees reservations)
 
-- 🚀 Server-side rendering
-- ⚡️ Hot Module Replacement (HMR)
-- 📦 Asset bundling and optimization
-- 🔄 Data loading and mutations
-- 🔒 TypeScript by default
-- 🎉 TailwindCSS for styling
-- 📖 [React Router docs](https://reactrouter.com/)
+## Prerequis
 
-## Getting Started
+- Node.js 20.x
+- npm 10+
+- Un acces Airtable avec:
+	- un Personal Access Token valide
+	- acces a la base cible
 
-### Installation
+## Installation locale
 
-Install the dependencies:
+1. Cloner le depot
+
+```bash
+git clone <url-du-repo>
+cd la-cigale-dashboard
+```
+
+2. Installer les dependances
 
 ```bash
 npm install
 ```
 
-### Development
+3. Creer le fichier .env a la racine du projet
 
-Start the development server with HMR:
+```env
+AIRTABLE_API_KEY=pat_xxxxxxxxxxxxxxxxx
+AIRTABLE_BASE_ID=appxxxxxxxxxxxxxx
+
+# Option 1 (recommandee): identifiant de table Airtable
+AIRTABLE_TABLE_ID=tblxxxxxxxxxxxxxx
+
+# Option 2 (fallback): nom de table Airtable
+# AIRTABLE_TABLE_NAME=reservation
+```
+
+Notes:
+
+- AIRTABLE_TABLE_ID est prioritaire si les deux variables table sont definies.
+- Si AIRTABLE_TABLE_ID est absent, AIRTABLE_TABLE_NAME est utilise.
+- Si AIRTABLE_TABLE_NAME est absent, la valeur par defaut est reservation.
+
+## Lancer le projet
+
+Mode developpement:
 
 ```bash
 npm run dev
 ```
 
-Your application will be available at `http://localhost:5173`.
+Application disponible sur:
 
-## Building for Production
+```text
+http://localhost:5173
+```
 
-Create a production build:
+## Verification rapide apres demarrage
+
+1. Ouvrir l application dans le navigateur.
+2. Verifier que la liste des reservations se charge.
+3. Tester un CRUD complet:
+	 - Creer une reservation
+	 - Modifier une reservation
+	 - Supprimer une reservation
+4. Verifier les deux vues:
+	 - Vue liste
+	 - Vue calendrier
+
+## Scripts utiles
+
+```bash
+# Developpement
+npm run dev
+
+# Verification TypeScript
+npm run typecheck
+
+# Build production
+npm run build
+
+# Execution du build
+npm run start
+```
+
+## Build et execution production
 
 ```bash
 npm run build
+npm run start
 ```
 
-## Deployment
+## Docker
 
-### Docker Deployment
-
-To build and run using Docker:
+Build image:
 
 ```bash
-docker build -t my-app .
-
-# Run the container
-docker run -p 3000:3000 my-app
+docker build -t la-cigale-dashboard .
 ```
 
-The containerized application can be deployed to any platform that supports Docker, including:
+Execution conteneur:
 
-- AWS ECS
-- Google Cloud Run
-- Azure Container Apps
-- Digital Ocean App Platform
-- Fly.io
-- Railway
-
-### DIY Deployment
-
-If you're familiar with deploying Node applications, the built-in app server is production-ready.
-
-Make sure to deploy the output of `npm run build`
-
-```
-├── package.json
-├── package-lock.json (or pnpm-lock.yaml, or bun.lockb)
-├── build/
-│   ├── client/    # Static assets
-│   └── server/    # Server-side code
+```bash
+docker run --env-file .env -p 3000:3000 la-cigale-dashboard
 ```
 
-## Styling
+## Depannage
 
-This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever CSS framework you prefer.
+### Erreur Airtable 401/403
 
----
+- Verifier AIRTABLE_API_KEY.
+- Verifier les permissions du token sur la base.
 
-Built with ❤️ using React Router.
+### Erreur Airtable 404
+
+- Verifier AIRTABLE_BASE_ID.
+- Verifier AIRTABLE_TABLE_ID ou AIRTABLE_TABLE_NAME.
+
+### Les reservations ne s affichent pas
+
+- Verifier les variables du .env.
+- Verifier que la table Airtable contient les champs attendus:
+	- name
+	- date
+	- hour
+	- phone_number
+	- number_person
+	- comments
+
+### Verification statique
+
+```bash
+npm run typecheck
+```
+
+## Bonnes pratiques securite
+
+- Ne jamais committer un .env avec des secrets reels.
+- Regenerer immediatement un token Airtable expose par erreur.
+- Limiter les permissions du token Airtable au strict necessaire.
